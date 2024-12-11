@@ -39,7 +39,7 @@ func Dilate(input string, radius int)  {
 	fmt.Printf("[%s] Image dilated in \n", elapsed)
 
 	fmt.Println("-----Saving Image-----")
-	err = util.SaveImage("output.png", outputImg)
+	err = util.SaveImage("../out/dilate.jpg", outputImg)
 	if err != nil {
 		fmt.Println("Failed to save image: ", err)
 		return
@@ -47,9 +47,5 @@ func Dilate(input string, radius int)  {
 
 	elapsed = time.Since(start)
 	fmt.Printf("[%s] Image saved in \n", elapsed)
-	
-
 }	
 
-
-	

@@ -70,7 +70,7 @@ func Background_reduction(reference string, input string, threshold float64, hsv
 	fmt.Printf("[%s] Background Reduction completed \n", elapsed)
 
 	fmt.Println("-----Saving Output Image-----")
-	err = util.SaveImage("output.jpg", outputImg)
+	err = util.SaveImage("../out/output.jpg", outputImg)
 	if err != nil {
 		fmt.Println("Failed to save output image: ", err)
 		return
