@@ -63,29 +63,20 @@ func erodePixel(img image.Image, x, y, radius int) color.Color {
 		maxY = img.Bounds().Max.Y
 	}
 
-	var r, g, b, a uint32
-	r = 255
-	g = 255
-	b = 255
-	a = 255
+	var (
+		r uint32 
+		g uint32
+		b uint32
+	)
 
 	for i := minX; i <= maxX; i++ {
 		for j := minY; j <= maxY; j++ {
-			r_, g_, b_, a_ := img.At(i, j).RGBA()
-			if r_ < r {
-				r = r_
-			}
-			if g_ < g {
-				g = g_
-			}
-			if b_ < b {
-				b = b_
-			}
-			if a_ < a {
-				a = a_
+			r, g, b, _ = img.At(i, j).RGBA()
+			if r == 0 && g == 0 && b == 0 {
+				return color.RGBA{0, 0, 0, 255}
 			}
 		}
 	}
 
-	return color.RGBA{uint8(r), uint8(g), uint8(b), uint8(a)}
+	return color.RGBA{255, 255, 255, 255}
 }

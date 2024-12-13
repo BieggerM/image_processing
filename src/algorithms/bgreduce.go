@@ -6,6 +6,7 @@ import (
 	"image/color"
 	"math"
 	"time"
+
 	"github.com/BieggerM/image_processing_golang/util"
 )
 
@@ -20,16 +21,14 @@ func Background_reduction(reference string, input string, threshold float64, hsv
 	elapsed := time.Since(start)
 	fmt.Printf("[%s] Reference Image loaded \n", elapsed)
 
-	fmt.Println("-----Reading Input Image-----")
 	inputImg, err := util.LoadImage(input)
 	if err != nil {
 		fmt.Println("Failed to load input image: ", err)
 		return
 	}
-	elapsed = time.Since(start)
+	elapsed = time.Duration(time.Since(start).Seconds())
 	fmt.Printf("[%s] Input Image loaded \n", elapsed)
 
-	fmt.Println("-----Checking compatibility of images-----")
 	err = checkCompatibility(refImg, inputImg)
 	if err != nil {
 		fmt.Println("Error: ", err)
@@ -38,7 +37,6 @@ func Background_reduction(reference string, input string, threshold float64, hsv
 	elapsed = time.Since(start)
 	fmt.Printf("[%s] Images are compatible \n", elapsed)
 
-	fmt.Println("-----Background Reduction-----")
 	outputImg := image.NewRGBA(refImg.Bounds())
 		
 	bounds := refImg.Bounds()
@@ -69,14 +67,13 @@ func Background_reduction(reference string, input string, threshold float64, hsv
 	elapsed = time.Since(start)
 	fmt.Printf("[%s] Background Reduction completed \n", elapsed)
 
-	fmt.Println("-----Saving Output Image-----")
 	err = util.SaveImage("../out/output.jpg", outputImg)
 	if err != nil {
 		fmt.Println("Failed to save output image: ", err)
 		return
 	}
 	elapsed = time.Since(start)
-	fmt.Printf("[%s] Output Image saved in %s\n", elapsed, "output.jpg")
+	fmt.Printf("[%s] Output Image saved in %s\n", elapsed, "../out/output.jpg")
 }
 
 
