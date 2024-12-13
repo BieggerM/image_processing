@@ -6,11 +6,11 @@ import (
 	"image/color"
 	"math"
 	"time"
-
+	"sync"
 	"github.com/BieggerM/image_processing_golang/util"
 )
 
-func Background_subtract(reference string, input string, threshold float64, hsv bool) {
+func Background_subtract(reference string, input string, threshold float64, hsv bool, multithreaded bool, numberofthreads int) {
 	start := time.Now()
 	fmt.Println("-----Reading Reference Image-----")
 	refImg, err := util.LoadImage(reference)
@@ -40,29 +40,72 @@ func Background_subtract(reference string, input string, threshold float64, hsv 
 	outputImg := image.NewRGBA(refImg.Bounds())
 
 	bounds := refImg.Bounds()
-	for y := bounds.Min.Y; y < bounds.Max.Y; y++ {
-		for x := bounds.Min.X; x < bounds.Max.X; x++ {
-			if hsv {
-				h1, s1, v1 := rgbToHsv(refImg.At(x, y))
-				h2, s2, v2 := rgbToHsv(inputImg.At(x, y))
-				diff := colorDifferenceHSV(h1, s1, v1, h2, s2, v2)
-				if diff < threshold {
-					outputImg.Set(x, y, color.RGBA{0, 0, 0, 255}) // Background
-				} else {
-					outputImg.Set(x, y, color.RGBA{255, 255, 255, 255}) // Foreground
+	if multithreaded {
+		var wg sync.WaitGroup
+		numWorkers := 4 // Number of goroutines to use
+		rowsPerWorker := (bounds.Max.Y - bounds.Min.Y) / numWorkers
+
+		for w := 0; w < numWorkers; w++ {
+			wg.Add(1)
+			go func(worker int) {
+				defer wg.Done()
+				startY := bounds.Min.Y + worker*rowsPerWorker
+				endY := startY + rowsPerWorker
+				if worker == numWorkers-1 {
+					endY = bounds.Max.Y
 				}
-			} else {
-				r, g, b, _ := refImg.At(x, y).RGBA()
-				r1, g1, b1, _ := inputImg.At(x, y).RGBA()
-				diff := colorDifference(color.RGBA{uint8(r >> 8), uint8(g >> 8), uint8(b >> 8), 255}, color.RGBA{uint8(r1 >> 8), uint8(g1 >> 8), uint8(b1 >> 8), 255})
-				if diff < threshold {
-					outputImg.Set(x, y, color.RGBA{0, 0, 0, 255}) // Background
+				for y := startY; y < endY; y++ {
+					for x := bounds.Min.X; x < bounds.Max.X; x++ {
+						if hsv {
+							h1, s1, v1 := rgbToHsv(refImg.At(x, y))
+							h2, s2, v2 := rgbToHsv(inputImg.At(x, y))
+							diff := colorDifferenceHSV(h1, s1, v1, h2, s2, v2)
+							if diff < threshold {
+								outputImg.Set(x, y, color.RGBA{0, 0, 0, 255}) // Background
+							} else {
+								outputImg.Set(x, y, color.RGBA{255, 255, 255, 255}) // Foreground
+							}
+						} else {
+							r, g, b, _ := refImg.At(x, y).RGBA()
+							r1, g1, b1, _ := inputImg.At(x, y).RGBA()
+							diff := colorDifference(color.RGBA{uint8(r >> 8), uint8(g >> 8), uint8(b >> 8), 255}, color.RGBA{uint8(r1 >> 8), uint8(g1 >> 8), uint8(b1 >> 8), 255})
+							if diff < threshold {
+								outputImg.Set(x, y, color.RGBA{0, 0, 0, 255}) // Background
+							} else {
+								outputImg.Set(x, y, color.RGBA{255, 255, 255, 255}) // Foreground
+							}
+						}
+					}
+				}
+			}(w)
+		}
+		wg.Wait()
+	} else {
+		for y := bounds.Min.Y; y < bounds.Max.Y; y++ {
+			for x := bounds.Min.X; x < bounds.Max.X; x++ {
+				if hsv {
+					h1, s1, v1 := rgbToHsv(refImg.At(x, y))
+					h2, s2, v2 := rgbToHsv(inputImg.At(x, y))
+					diff := colorDifferenceHSV(h1, s1, v1, h2, s2, v2)
+					if diff < threshold {
+						outputImg.Set(x, y, color.RGBA{0, 0, 0, 255}) // Background
+					} else {
+						outputImg.Set(x, y, color.RGBA{255, 255, 255, 255}) // Foreground
+					}
 				} else {
-					outputImg.Set(x, y, color.RGBA{255, 255, 255, 255}) // Foreground
+					r, g, b, _ := refImg.At(x, y).RGBA()
+					r1, g1, b1, _ := inputImg.At(x, y).RGBA()
+					diff := colorDifference(color.RGBA{uint8(r >> 8), uint8(g >> 8), uint8(b >> 8), 255}, color.RGBA{uint8(r1 >> 8), uint8(g1 >> 8), uint8(b1 >> 8), 255})
+					if diff < threshold {
+						outputImg.Set(x, y, color.RGBA{0, 0, 0, 255}) // Background
+					} else {
+						outputImg.Set(x, y, color.RGBA{255, 255, 255, 255}) // Foreground
+					}
 				}
 			}
 		}
 	}
+	
 
 	elapsed = time.Since(start)
 	fmt.Printf("[%.7f] 0 (algorithm/bgsubtraction) finish background subtraction \n", elapsed.Seconds())
