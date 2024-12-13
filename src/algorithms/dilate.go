@@ -6,9 +6,10 @@ import (
 	"time"
 	"image/color"
 	"github.com/BieggerM/image_processing_golang/util"
+	"sync"
 )
 
-func Dilate(input string, radius int)  {
+func Dilate(input string, radius int, multithreaded bool, numberofthreads int)  {
 	start := time.Now()
 
 	fmt.Println("-----Reading Image-----")
@@ -24,9 +25,33 @@ func Dilate(input string, radius int)  {
 	elapsed = time.Since(start)
 	fmt.Printf("[%.7f] 0 (algorithm/dilate) finish create output image \n", elapsed.Seconds())
 
-	for y := img.Bounds().Min.Y; y < img.Bounds().Max.Y; y++ {
-		for x := img.Bounds().Min.X; x < img.Bounds().Max.X; x++ {
-			outputImg.Set(x, y, dilatePixel(img, x, y, radius))
+	if multithreaded {
+		var wg sync.WaitGroup
+		rowsPerWorker := (img.Bounds().Max.Y - img.Bounds().Min.Y) / numberofthreads
+		fmt.Println("Rows per worker: ", rowsPerWorker)
+		for w := 0; w < numberofthreads; w++ {
+			wg.Add(1)
+			go func(worker int) {
+				defer wg.Done()
+				startY := img.Bounds().Min.Y + worker*rowsPerWorker
+				endY := startY + rowsPerWorker
+				if worker == numberofthreads-1 {
+					endY = img.Bounds().Max.Y
+				}
+				for y := startY; y < endY; y++ {
+					for x := img.Bounds().Min.X; x < img.Bounds().Max.X; x++ {
+						outputImg.Set(x, y, dilatePixel(img, x, y, radius))
+					}
+				}
+			}(w)
+		}
+		wg.Wait()
+
+	} else {
+		for y := img.Bounds().Min.Y; y < img.Bounds().Max.Y; y++ {
+			for x := img.Bounds().Min.X; x < img.Bounds().Max.X; x++ {
+				outputImg.Set(x, y, dilatePixel(img, x, y, radius))
+			}
 		}
 	}
 
