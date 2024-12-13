@@ -18,7 +18,7 @@ func Erode(input string, radius int)  {
 		return
 	}
 	elapsed := time.Since(start)
-	fmt.Printf("[%s] Image loaded in \n", elapsed)
+	fmt.Printf("[%s] Image loaded \n", elapsed)
 
 	fmt.Println("-----Eroding Image-----")
 	outputImg := image.NewRGBA(img.Bounds())
@@ -30,7 +30,7 @@ func Erode(input string, radius int)  {
 	}
 
 	elapsed = time.Since(start)
-	fmt.Printf("[%s] Image eroded in \n", elapsed)
+	fmt.Printf("[%s] Image eroded \n", elapsed)
 
 	fmt.Println("-----Saving Image-----")
 	err = util.SaveImage("../out/erode.jpg", outputImg)
@@ -40,7 +40,7 @@ func Erode(input string, radius int)  {
 	}
 
 	elapsed = time.Since(start)
-	fmt.Printf("[%s] Image saved in \n", elapsed)
+	fmt.Printf("[%s] Image saved in ../out/erode.jpg\n", elapsed)
 }	
 
 func erodePixel(img image.Image, x, y, radius int) color.Color {
