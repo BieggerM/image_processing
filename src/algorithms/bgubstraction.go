@@ -10,7 +10,7 @@ import (
 	"github.com/BieggerM/image_processing_golang/util"
 )
 
-func Background_reduction(reference string, input string, threshold float64, hsv bool) {
+func Background_subtract(reference string, input string, threshold float64, hsv bool) {
 	start := time.Now()
 	fmt.Println("-----Reading Reference Image-----")
 	refImg, err := util.LoadImage(reference)
@@ -19,7 +19,7 @@ func Background_reduction(reference string, input string, threshold float64, hsv
 		return
 	}
 	elapsed := time.Since(start)
-	fmt.Printf("[%s] Reference Image loaded \n", elapsed)
+	fmt.Printf("[%.7f] 0 (algorithm/bgsubtraction) finish open reference image \n", elapsed.Seconds())
 
 	inputImg, err := util.LoadImage(input)
 	if err != nil {
@@ -27,7 +27,7 @@ func Background_reduction(reference string, input string, threshold float64, hsv
 		return
 	}
 	elapsed = time.Duration(time.Since(start).Seconds())
-	fmt.Printf("[%s] Input Image loaded \n", elapsed)
+	fmt.Printf("[%.7f] 0 (algorithm/bgsubtraction) finish open input image \n", elapsed.Seconds())
 
 	err = checkCompatibility(refImg, inputImg)
 	if err != nil {
@@ -35,10 +35,10 @@ func Background_reduction(reference string, input string, threshold float64, hsv
 		return
 	}
 	elapsed = time.Since(start)
-	fmt.Printf("[%s] Images are compatible \n", elapsed)
+	fmt.Printf("[%.7f] 0 (algorithm/bgsubtraction) finish compatibility check \n", elapsed.Seconds())
 
 	outputImg := image.NewRGBA(refImg.Bounds())
-		
+
 	bounds := refImg.Bounds()
 	for y := bounds.Min.Y; y < bounds.Max.Y; y++ {
 		for x := bounds.Min.X; x < bounds.Max.X; x++ {
@@ -49,7 +49,7 @@ func Background_reduction(reference string, input string, threshold float64, hsv
 				if diff < threshold {
 					outputImg.Set(x, y, color.RGBA{0, 0, 0, 255}) // Background
 				} else {
-					outputImg.Set(x, y, color.RGBA{255,255,255,255}) // Foreground
+					outputImg.Set(x, y, color.RGBA{255, 255, 255, 255}) // Foreground
 				}
 			} else {
 				r, g, b, _ := refImg.At(x, y).RGBA()
@@ -58,14 +58,14 @@ func Background_reduction(reference string, input string, threshold float64, hsv
 				if diff < threshold {
 					outputImg.Set(x, y, color.RGBA{0, 0, 0, 255}) // Background
 				} else {
-					outputImg.Set(x, y, color.RGBA{255,255,255,255}) // Foreground
+					outputImg.Set(x, y, color.RGBA{255, 255, 255, 255}) // Foreground
 				}
 			}
 		}
 	}
-	
+
 	elapsed = time.Since(start)
-	fmt.Printf("[%s] Background Reduction completed \n", elapsed)
+	fmt.Printf("[%.7f] 0 (algorithm/bgsubtraction) finish background subtraction \n", elapsed.Seconds())
 
 	err = util.SaveImage("../out/output.jpg", outputImg)
 	if err != nil {
@@ -73,9 +73,8 @@ func Background_reduction(reference string, input string, threshold float64, hsv
 		return
 	}
 	elapsed = time.Since(start)
-	fmt.Printf("[%s] Output Image saved in %s\n", elapsed, "../out/output.jpg")
+	fmt.Printf("[%.7f] 0 (algorithm/bgsubtraction) finish save image in %s\n", elapsed.Seconds(), "../out/output.jpg")
 }
-
 
 func checkCompatibility(refImg image.Image, inputImg image.Image) error {
 	if refImg.Bounds().Dx() != inputImg.Bounds().Dx() || refImg.Bounds().Dy() != inputImg.Bounds().Dy() {
@@ -92,45 +91,45 @@ func colorDifference(c1, c2 color.RGBA) float64 {
 }
 
 func colorDifferenceHSV(h1, s1, v1, h2, s2, v2 float64) float64 {
-    hDiff := h1 - h2
-    sDiff := s1 - s2
-    vDiff := v1 - v2
-    return math.Sqrt((hDiff*hDiff + sDiff*sDiff + vDiff*vDiff) / 3.0)
+	hDiff := h1 - h2
+	sDiff := s1 - s2
+	vDiff := v1 - v2
+	return math.Sqrt((hDiff*hDiff + sDiff*sDiff + vDiff*vDiff) / 3.0)
 }
 
 func rgbToHsv(c color.Color) (float64, float64, float64) {
-    r, g, b, _ := c.RGBA()
-    rf := float64(r) / 65535.0
-    gf := float64(g) / 65535.0
-    bf := float64(b) / 65535.0
+	r, g, b, _ := c.RGBA()
+	rf := float64(r) / 65535.0
+	gf := float64(g) / 65535.0
+	bf := float64(b) / 65535.0
 
-    max := math.Max(rf, math.Max(gf, bf))
-    min := math.Min(rf, math.Min(gf, bf))
-    delta := max - min
+	max := math.Max(rf, math.Max(gf, bf))
+	min := math.Min(rf, math.Min(gf, bf))
+	delta := max - min
 
-    var h, s, v float64
-    v = max
+	var h, s, v float64
+	v = max
 
-    if max != 0 {
-        s = delta / max
-    } else {
-        s = 0
-        h = -1
-        return h, s, v
-    }
+	if max != 0 {
+		s = delta / max
+	} else {
+		s = 0
+		h = -1
+		return h, s, v
+	}
 
-    if rf == max {
-        h = (gf - bf) / delta
-    } else if gf == max {
-        h = 2 + (bf-rf)/delta
-    } else {
-        h = 4 + (rf-gf)/delta
-    }
+	if rf == max {
+		h = (gf - bf) / delta
+	} else if gf == max {
+		h = 2 + (bf-rf)/delta
+	} else {
+		h = 4 + (rf-gf)/delta
+	}
 
-    h *= 60
-    if h < 0 {
-        h += 360
-    }
+	h *= 60
+	if h < 0 {
+		h += 360
+	}
 
-    return h, s, v
+	return h, s, v
 }

@@ -11,17 +11,17 @@ import (
 func Erode(input string, radius int)  {
 	start := time.Now()
 
-	fmt.Println("-----Reading Image-----")
 	img, err := util.LoadImage(input)
 	if err != nil {
 		fmt.Println("Failed to load image: ", err)
 		return
 	}
 	elapsed := time.Since(start)
-	fmt.Printf("[%s] Image loaded \n", elapsed)
+	fmt.Printf("[%.7f] 0 (algorithm/erode) finish open image \n", elapsed.Seconds())
 
-	fmt.Println("-----Eroding Image-----")
 	outputImg := image.NewRGBA(img.Bounds())
+	elapsed = time.Since(start)
+	fmt.Printf("[%.7f] 0 (algorithm/erode) finish create output image \n", elapsed.Seconds())
 
 	for y := img.Bounds().Min.Y; y < img.Bounds().Max.Y; y++ {
 		for x := img.Bounds().Min.X; x < img.Bounds().Max.X; x++ {
@@ -30,9 +30,8 @@ func Erode(input string, radius int)  {
 	}
 
 	elapsed = time.Since(start)
-	fmt.Printf("[%s] Image eroded \n", elapsed)
+	fmt.Printf("[%.7f] 0 (algorithm/erode) finish erode \n", elapsed.Seconds())
 
-	fmt.Println("-----Saving Image-----")
 	err = util.SaveImage("../out/erode.jpg", outputImg)
 	if err != nil {
 		fmt.Println("Failed to save image: ", err)
@@ -40,7 +39,7 @@ func Erode(input string, radius int)  {
 	}
 
 	elapsed = time.Since(start)
-	fmt.Printf("[%s] Image saved in ../out/erode.jpg\n", elapsed)
+	fmt.Printf("[%.7f] 0 (algorithm/erode) finish save image ../out/erode.jpg\n", elapsed.Seconds())
 }	
 
 func erodePixel(img image.Image, x, y, radius int) color.Color {

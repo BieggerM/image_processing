@@ -18,10 +18,11 @@ func Dilate(input string, radius int)  {
 		return
 	}
 	elapsed := time.Since(start)
-	fmt.Printf("[%s] Image loaded \n", elapsed)
+	fmt.Printf("[%.7f] 0 (algorithm/dilate) finish open image \n", elapsed.Seconds())
 
-	fmt.Println("-----Dilating Image-----")
 	outputImg := image.NewRGBA(img.Bounds())
+	elapsed = time.Since(start)
+	fmt.Printf("[%.7f] 0 (algorithm/dilate) finish create output image \n", elapsed.Seconds())
 
 	for y := img.Bounds().Min.Y; y < img.Bounds().Max.Y; y++ {
 		for x := img.Bounds().Min.X; x < img.Bounds().Max.X; x++ {
@@ -30,9 +31,8 @@ func Dilate(input string, radius int)  {
 	}
 
 	elapsed = time.Since(start)
-	fmt.Printf("[%s] Image dilated \n", elapsed)
+	fmt.Printf("[%.7f] 0 (algorithm/dilate) finish dilate \n", elapsed.Seconds())
 
-	fmt.Println("-----Saving Image-----")
 	err = util.SaveImage("../out/dilate.jpg", outputImg)
 	if err != nil {
 		fmt.Println("Failed to save image: ", err)
@@ -40,7 +40,7 @@ func Dilate(input string, radius int)  {
 	}
 
 	elapsed = time.Since(start)
-	fmt.Printf("[%s] Image saved in ../out/dilate.jpg\n", elapsed)
+	fmt.Printf("[%.7f] 0 (algorithm/dilate) finish save image ../out/dilate.jpg\n", elapsed.Seconds())
 }	
 
 func dilatePixel(img image.Image, x, y, radius int) color.Color {
