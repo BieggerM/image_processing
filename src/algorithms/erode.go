@@ -28,7 +28,7 @@ func Erode(input string, radius int)  {
 			outputImg.Set(x, y, erodePixel(img, x, y, radius))
 		}
 	}
-	
+
 	elapsed = time.Since(start)
 	fmt.Printf("[%s] Image eroded in \n", elapsed)
 
@@ -41,9 +41,7 @@ func Erode(input string, radius int)  {
 
 	elapsed = time.Since(start)
 	fmt.Printf("[%s] Image saved in \n", elapsed)
-	
-
-}
+}	
 
 func erodePixel(img image.Image, x, y, radius int) color.Color {
 	minX := x - radius
@@ -63,20 +61,14 @@ func erodePixel(img image.Image, x, y, radius int) color.Color {
 		maxY = img.Bounds().Max.Y
 	}
 
-	var (
-		r uint32 
-		g uint32
-		b uint32
-	)
-
 	for i := minX; i <= maxX; i++ {
-		for j := minY; j <= maxY; j++ {
-			r, g, b, _ = img.At(i, j).RGBA()
-			if r == 0 && g == 0 && b == 0 {
-				return color.RGBA{0, 0, 0, 255}
-			}
-		}
-	}
+        for j := minY; j <= maxY; j++ {
+            r, g, b, _ := img.At(i, j).RGBA()
+            if r == 0 && g == 0 && b == 0 { // Check if the pixel is black
+                return color.RGBA{0, 0, 0, 255} // Set the current pixel to black
+            }
+        }
+    }
 
 	return color.RGBA{255, 255, 255, 255}
 }
