@@ -53,59 +53,14 @@ func Background_subtract(reference string, input string, threshold float64, hsv 
 				if worker == numberofthreads-1 {
 					endY = bounds.Max.Y
 				}
-				for y := startY; y < endY; y++ {
-					for x := bounds.Min.X; x < bounds.Max.X; x++ {
-						if hsv {
-							h1, s1, v1 := rgbToHsv(refImg.At(x, y))
-							h2, s2, v2 := rgbToHsv(inputImg.At(x, y))
-							diff := colorDifferenceHSV(h1, s1, v1, h2, s2, v2)
-							if diff < threshold {
-								outputImg.Set(x, y, color.RGBA{0, 0, 0, 255}) // Background
-							} else {
-								outputImg.Set(x, y, color.RGBA{255, 255, 255, 255}) // Foreground
-							}
-						} else {
-							r, g, b, _ := refImg.At(x, y).RGBA()
-							r1, g1, b1, _ := inputImg.At(x, y).RGBA()
-							diff := colorDifference(color.RGBA{uint8(r >> 8), uint8(g >> 8), uint8(b >> 8), 255}, color.RGBA{uint8(r1 >> 8), uint8(g1 >> 8), uint8(b1 >> 8), 255})
-							if diff < threshold {
-								outputImg.Set(x, y, color.RGBA{0, 0, 0, 255}) // Background
-							} else {
-								outputImg.Set(x, y, color.RGBA{255, 255, 255, 255}) // Foreground
-							}
-						}
-					}
-				}
+				substraction(startY, endY, bounds.Min.X, bounds.Max.X, hsv, refImg, inputImg, threshold, outputImg)
 			}(w)
 		}
 		wg.Wait()
 	} else {
-		for y := bounds.Min.Y; y < bounds.Max.Y; y++ {
-			for x := bounds.Min.X; x < bounds.Max.X; x++ {
-				if hsv {
-					h1, s1, v1 := rgbToHsv(refImg.At(x, y))
-					h2, s2, v2 := rgbToHsv(inputImg.At(x, y))
-					diff := colorDifferenceHSV(h1, s1, v1, h2, s2, v2)
-					if diff < threshold {
-						outputImg.Set(x, y, color.RGBA{0, 0, 0, 255}) // Background
-					} else {
-						outputImg.Set(x, y, color.RGBA{255, 255, 255, 255}) // Foreground
-					}
-				} else {
-					r, g, b, _ := refImg.At(x, y).RGBA()
-					r1, g1, b1, _ := inputImg.At(x, y).RGBA()
-					diff := colorDifference(color.RGBA{uint8(r >> 8), uint8(g >> 8), uint8(b >> 8), 255}, color.RGBA{uint8(r1 >> 8), uint8(g1 >> 8), uint8(b1 >> 8), 255})
-					if diff < threshold {
-						outputImg.Set(x, y, color.RGBA{0, 0, 0, 255}) // Background
-					} else {
-						outputImg.Set(x, y, color.RGBA{255, 255, 255, 255}) // Foreground
-					}
-				}
-			}
-		}
+		substraction(bounds.Min.Y, bounds.Max.Y, bounds.Min.X, bounds.Max.X, hsv, refImg, inputImg, threshold, outputImg)
 	}
 	
-
 	elapsed = time.Since(start)
 	fmt.Printf("[%.7f] 0 (algorithm/bgsubtraction) finish background subtraction \n", elapsed.Seconds())
 
@@ -118,6 +73,32 @@ func Background_subtract(reference string, input string, threshold float64, hsv 
 	fmt.Printf("[%.7f] 0 (algorithm/bgsubtraction) finish save image in %s\n", elapsed.Seconds(), "../out/output.jpg")
 }
 
+func substraction(startY int, endY int, minX int, maxX int, hsv bool, refImg image.Image, inputImg image.Image, threshold float64, outputImg *image.RGBA) {
+	for y := startY; y < endY; y++ {
+		for x := minX; x < maxX; x++ {
+			if hsv {
+				h1, s1, v1 := rgbToHsv(refImg.At(x, y))
+				h2, s2, v2 := rgbToHsv(inputImg.At(x, y))
+				diff := colorDifferenceHSV(h1, s1, v1, h2, s2, v2)
+				if diff < threshold {
+					outputImg.Set(x, y, color.RGBA{0, 0, 0, 255})
+				} else {
+					outputImg.Set(x, y, color.RGBA{255, 255, 255, 255})
+				}
+			} else {
+				r, g, b, _ := refImg.At(x, y).RGBA()
+				r1, g1, b1, _ := inputImg.At(x, y).RGBA()
+				diff := colorDifferenceRGB(color.RGBA{uint8(r >> 8), uint8(g >> 8), uint8(b >> 8), 255}, color.RGBA{uint8(r1 >> 8), uint8(g1 >> 8), uint8(b1 >> 8), 255})
+				if diff < threshold {
+					outputImg.Set(x, y, color.RGBA{0, 0, 0, 255})
+				} else {
+					outputImg.Set(x, y, color.RGBA{255, 255, 255, 255})
+				}
+			}
+		}
+	}
+}
+
 func checkCompatibility(refImg image.Image, inputImg image.Image) error {
 	if refImg.Bounds().Dx() != inputImg.Bounds().Dx() || refImg.Bounds().Dy() != inputImg.Bounds().Dy() {
 		return fmt.Errorf("images are not compatible")
@@ -125,57 +106,12 @@ func checkCompatibility(refImg image.Image, inputImg image.Image) error {
 	return nil
 }
 
-func colorDifference(c1, c2 color.RGBA) float64 {
-	rDiff := float64(c1.R) - float64(c2.R)
-	gDiff := float64(c1.G) - float64(c2.G)
-	bDiff := float64(c1.B) - float64(c2.B)
-	return math.Sqrt((rDiff*rDiff + gDiff*gDiff + bDiff*bDiff) / 3.0)
+func colorDifferenceRGB(c1, c2 color.RGBA) float64 {
+	rDiff := c1.R - c2.R
+	gDiff := c1.G - c2.G
+	bDiff := c1.B - c2.B
+	return math.Sqrt(float64(rDiff*rDiff + gDiff*gDiff + bDiff*bDiff) / 3.0)
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 func colorDifferenceHSV(h1, s1, v1, h2, s2, v2 float64) float64 {
 	hDiff := h1 - h2
