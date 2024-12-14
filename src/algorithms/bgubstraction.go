@@ -26,7 +26,7 @@ func Background_subtract(reference string, input string, threshold float64, hsv 
 		fmt.Println("Failed to load input image: ", err)
 		return
 	}
-	elapsed = time.Duration(time.Since(start).Seconds())
+	elapsed = time.Since(start)
 	fmt.Printf("[%.7f] 0 (algorithm/bgsubtraction) finish open input image \n", elapsed.Seconds())
 
 	err = checkCompatibility(refImg, inputImg)
@@ -42,16 +42,15 @@ func Background_subtract(reference string, input string, threshold float64, hsv 
 	bounds := refImg.Bounds()
 	if multithreaded {
 		var wg sync.WaitGroup
-		numWorkers := 4 // Number of goroutines to use
-		rowsPerWorker := (bounds.Max.Y - bounds.Min.Y) / numWorkers
+		rowsPerWorker := (bounds.Max.Y - bounds.Min.Y) / numberofthreads
 
-		for w := 0; w < numWorkers; w++ {
+		for w := 0; w < numberofthreads; w++ {
 			wg.Add(1)
 			go func(worker int) {
 				defer wg.Done()
 				startY := bounds.Min.Y + worker*rowsPerWorker
 				endY := startY + rowsPerWorker
-				if worker == numWorkers-1 {
+				if worker == numberofthreads-1 {
 					endY = bounds.Max.Y
 				}
 				for y := startY; y < endY; y++ {
@@ -68,7 +67,7 @@ func Background_subtract(reference string, input string, threshold float64, hsv 
 						} else {
 							r, g, b, _ := refImg.At(x, y).RGBA()
 							r1, g1, b1, _ := inputImg.At(x, y).RGBA()
-							diff := colorDifference(r, r1, g, g1, b, b1)
+							diff := colorDifference(color.RGBA{uint8(r >> 8), uint8(g >> 8), uint8(b >> 8), 255}, color.RGBA{uint8(r1 >> 8), uint8(g1 >> 8), uint8(b1 >> 8), 255})
 							if diff < threshold {
 								outputImg.Set(x, y, color.RGBA{0, 0, 0, 255}) // Background
 							} else {
@@ -95,7 +94,7 @@ func Background_subtract(reference string, input string, threshold float64, hsv 
 				} else {
 					r, g, b, _ := refImg.At(x, y).RGBA()
 					r1, g1, b1, _ := inputImg.At(x, y).RGBA()
-					diff := colorDifference(r, r1, g, g1, b, b1)
+					diff := colorDifference(color.RGBA{uint8(r >> 8), uint8(g >> 8), uint8(b >> 8), 255}, color.RGBA{uint8(r1 >> 8), uint8(g1 >> 8), uint8(b1 >> 8), 255})
 					if diff < threshold {
 						outputImg.Set(x, y, color.RGBA{0, 0, 0, 255}) // Background
 					} else {
@@ -126,12 +125,57 @@ func checkCompatibility(refImg image.Image, inputImg image.Image) error {
 	return nil
 }
 
-func colorDifference(r1, r2, g1, g2, b1, b2 uint32) float64 {
-	rDiff := r1 - r2
-	gDiff := g1 - g2
-	bDiff := b1 - b2
-	return math.Sqrt(float64(rDiff*rDiff + gDiff*gDiff + bDiff*bDiff) / 3.0)
+func colorDifference(c1, c2 color.RGBA) float64 {
+	rDiff := float64(c1.R) - float64(c2.R)
+	gDiff := float64(c1.G) - float64(c2.G)
+	bDiff := float64(c1.B) - float64(c2.B)
+	return math.Sqrt((rDiff*rDiff + gDiff*gDiff + bDiff*bDiff) / 3.0)
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 func colorDifferenceHSV(h1, s1, v1, h2, s2, v2 float64) float64 {
 	hDiff := h1 - h2
