@@ -107,10 +107,10 @@ func checkCompatibility(refImg image.Image, inputImg image.Image) error {
 }
 
 func colorDifferenceRGB(c1, c2 color.RGBA) float64 {
-	rDiff := c1.R - c2.R
-	gDiff := c1.G - c2.G
-	bDiff := c1.B - c2.B
-	return math.Sqrt(float64(rDiff*rDiff + gDiff*gDiff + bDiff*bDiff) / 3.0)
+	rDiff := float64(c1.R) - float64(c2.R)
+	gDiff := float64(c1.G) - float64(c2.G)
+	bDiff := float64(c1.B) - float64(c2.B)
+	return math.Abs(rDiff + gDiff + bDiff) / 3.0
 }
 
 func colorDifferenceHSV(h1, s1, v1, h2, s2, v2 float64) float64 {
