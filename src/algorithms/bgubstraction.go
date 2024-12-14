@@ -68,7 +68,7 @@ func Background_subtract(reference string, input string, threshold float64, hsv 
 						} else {
 							r, g, b, _ := refImg.At(x, y).RGBA()
 							r1, g1, b1, _ := inputImg.At(x, y).RGBA()
-							diff := colorDifference(color.RGBA{uint8(r >> 8), uint8(g >> 8), uint8(b >> 8), 255}, color.RGBA{uint8(r1 >> 8), uint8(g1 >> 8), uint8(b1 >> 8), 255})
+							diff := colorDifference(r, r1, g, g1, b, b1)
 							if diff < threshold {
 								outputImg.Set(x, y, color.RGBA{0, 0, 0, 255}) // Background
 							} else {
@@ -95,7 +95,7 @@ func Background_subtract(reference string, input string, threshold float64, hsv 
 				} else {
 					r, g, b, _ := refImg.At(x, y).RGBA()
 					r1, g1, b1, _ := inputImg.At(x, y).RGBA()
-					diff := colorDifference(color.RGBA{uint8(r >> 8), uint8(g >> 8), uint8(b >> 8), 255}, color.RGBA{uint8(r1 >> 8), uint8(g1 >> 8), uint8(b1 >> 8), 255})
+					diff := colorDifference(r, r1, g, g1, b, b1)
 					if diff < threshold {
 						outputImg.Set(x, y, color.RGBA{0, 0, 0, 255}) // Background
 					} else {
@@ -126,11 +126,11 @@ func checkCompatibility(refImg image.Image, inputImg image.Image) error {
 	return nil
 }
 
-func colorDifference(c1, c2 color.RGBA) float64 {
-	rDiff := float64(c1.R) - float64(c2.R)
-	gDiff := float64(c1.G) - float64(c2.G)
-	bDiff := float64(c1.B) - float64(c2.B)
-	return math.Sqrt((rDiff*rDiff + gDiff*gDiff + bDiff*bDiff) / 3.0)
+func colorDifference(r1, r2, g1, g2, b1, b2 uint32) float64 {
+	rDiff := r1 - r2
+	gDiff := g1 - g2
+	bDiff := b1 - b2
+	return math.Sqrt(float64(rDiff*rDiff + gDiff*gDiff + bDiff*bDiff) / 3.0)
 }
 
 func colorDifferenceHSV(h1, s1, v1, h2, s2, v2 float64) float64 {
