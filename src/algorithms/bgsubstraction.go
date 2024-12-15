@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"image"
 	"image/color"
-	"math"
 	"time"
 	"sync"
 	"github.com/BieggerM/image_processing_golang/util"
@@ -80,13 +79,13 @@ func substraction(startY int, endY int, minX int, maxX int, hsv bool, refImg ima
 		for x := minX; x < maxX; x++ {
 			offset := y*stride + x*4
 			if hsv {
-				h1, s1, v1 := rgbToHsv(refImg.At(x, y))
-				h2, s2, v2 := rgbToHsv(inputImg.At(x, y))
-				diff = weighted_hsv_distance(h1, s1, v1, h2, s2, v2, 1.0, 1.0, 1.0)
+				h1, s1, v1 := util.RgbToHsv(refImg.At(x, y))
+				h2, s2, v2 := util.RgbToHsv(inputImg.At(x, y))
+				diff = util.Weighted_hsv_distance(h1, s1, v1, h2, s2, v2, 1.0, 1.0, 1.0)
 			} else {
 				r, g, b, _ := refImg.At(x, y).RGBA()
 				r1, g1, b1, _ := inputImg.At(x, y).RGBA()
-				diff = colorDifferenceRGB(color.RGBA{uint8(r >> 8), uint8(g >> 8), uint8(b >> 8), 255}, color.RGBA{uint8(r1 >> 8), uint8(g1 >> 8), uint8(b1 >> 8), 255})
+				diff = util.ColorDifferenceRGB(color.RGBA{uint8(r >> 8), uint8(g >> 8), uint8(b >> 8), 255}, color.RGBA{uint8(r1 >> 8), uint8(g1 >> 8), uint8(b1 >> 8), 255})
 			}
 			if diff < threshold {
 				outputImg.Pix[offset+0] = 0
@@ -108,55 +107,4 @@ func checkCompatibility(refImg image.Image, inputImg image.Image) error {
 		return fmt.Errorf("images are not compatible")
 	}
 	return nil
-}
-
-func colorDifferenceRGB(c1, c2 color.RGBA) float64 {
-	rDiff := float64(c1.R) - float64(c2.R)
-	gDiff := float64(c1.G) - float64(c2.G)
-	bDiff := float64(c1.B) - float64(c2.B)
-	return math.Abs(rDiff + gDiff + bDiff) / 3.0
-}
-
-func rgbToHsv(c color.Color) (float64, float64, float64) {
-	r, g, b, _ := c.RGBA()
-	rf := float64(r) / 65535.0
-	gf := float64(g) / 65535.0
-	bf := float64(b) / 65535.0
-
-	max := math.Max(rf, math.Max(gf, bf))
-	min := math.Min(rf, math.Min(gf, bf))
-	delta := max - min
-
-	var h, s, v float64
-	v = max
-
-	if max != 0 {
-		s = delta / max
-	} else {
-		s = 0
-		h = -1
-		return h, s, v
-	}
-
-	if rf == max {
-		h = (gf - bf) / delta
-	} else if gf == max {
-		h = 2 + (bf-rf)/delta
-	} else {
-		h = 4 + (rf-gf)/delta
-	}
-
-	h *= 60
-	if h < 0 {
-		h += 360
-	}
-
-	return h, s, v
-}
-
-func weighted_hsv_distance(h1, s1, v1, h2, s2, v2, weightH, weightS, weightV float64) float64 {
-	hDiff := h1 - h2
-	sDiff := s1 - s2
-	vDiff := v1 - v2
-	return math.Sqrt(weightH*(hDiff*hDiff) + weightS*(sDiff*sDiff) + weightV*(vDiff*vDiff))
 }
