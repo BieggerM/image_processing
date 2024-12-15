@@ -74,26 +74,30 @@ func Background_subtract(reference string, input string, threshold float64, hsv 
 }
 
 func substraction(startY int, endY int, minX int, maxX int, hsv bool, refImg image.Image, inputImg image.Image, threshold float64, outputImg *image.RGBA) {
+	stride := outputImg.Stride
+	var diff float64
 	for y := startY; y < endY; y++ {
 		for x := minX; x < maxX; x++ {
+			offset := y*stride + x*4
 			if hsv {
 				h1, s1, v1 := rgbToHsv(refImg.At(x, y))
 				h2, s2, v2 := rgbToHsv(inputImg.At(x, y))
-				diff := colorDifferenceHSV(h1, s1, v1, h2, s2, v2)
-				if diff < threshold {
-					outputImg.Set(x, y, color.RGBA{0, 0, 0, 255})
-				} else {
-					outputImg.Set(x, y, color.RGBA{255, 255, 255, 255})
-				}
+				diff = weighted_hsv_distance(h1, s1, v1, h2, s2, v2, 1.0, 1.0, 1.0)
 			} else {
 				r, g, b, _ := refImg.At(x, y).RGBA()
 				r1, g1, b1, _ := inputImg.At(x, y).RGBA()
-				diff := colorDifferenceRGB(color.RGBA{uint8(r >> 8), uint8(g >> 8), uint8(b >> 8), 255}, color.RGBA{uint8(r1 >> 8), uint8(g1 >> 8), uint8(b1 >> 8), 255})
-				if diff < threshold {
-					outputImg.Set(x, y, color.RGBA{0, 0, 0, 255})
-				} else {
-					outputImg.Set(x, y, color.RGBA{255, 255, 255, 255})
-				}
+				diff = colorDifferenceRGB(color.RGBA{uint8(r >> 8), uint8(g >> 8), uint8(b >> 8), 255}, color.RGBA{uint8(r1 >> 8), uint8(g1 >> 8), uint8(b1 >> 8), 255})
+			}
+			if diff < threshold {
+				outputImg.Pix[offset+0] = 0
+				outputImg.Pix[offset+1] = 0
+				outputImg.Pix[offset+2] = 0
+				outputImg.Pix[offset+3] = 255
+			} else {
+				outputImg.Pix[offset+0] = 255
+				outputImg.Pix[offset+1] = 255
+				outputImg.Pix[offset+2] = 255
+				outputImg.Pix[offset+3] = 255
 			}
 		}
 	}
@@ -111,13 +115,6 @@ func colorDifferenceRGB(c1, c2 color.RGBA) float64 {
 	gDiff := float64(c1.G) - float64(c2.G)
 	bDiff := float64(c1.B) - float64(c2.B)
 	return math.Abs(rDiff + gDiff + bDiff) / 3.0
-}
-
-func colorDifferenceHSV(h1, s1, v1, h2, s2, v2 float64) float64 {
-	hDiff := h1 - h2
-	sDiff := s1 - s2
-	vDiff := v1 - v2
-	return math.Sqrt((hDiff*hDiff + sDiff*sDiff + vDiff*vDiff) / 3.0)
 }
 
 func rgbToHsv(c color.Color) (float64, float64, float64) {
@@ -155,4 +152,11 @@ func rgbToHsv(c color.Color) (float64, float64, float64) {
 	}
 
 	return h, s, v
+}
+
+func weighted_hsv_distance(h1, s1, v1, h2, s2, v2, weightH, weightS, weightV float64) float64 {
+	hDiff := h1 - h2
+	sDiff := s1 - s2
+	vDiff := v1 - v2
+	return math.Sqrt(weightH*(hDiff*hDiff) + weightS*(sDiff*sDiff) + weightV*(vDiff*vDiff))
 }
