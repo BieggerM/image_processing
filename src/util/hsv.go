@@ -49,10 +49,4 @@ func Weighted_hsv_distance(h1, s1, v1, h2, s2, v2, weightH, weightS, weightV flo
 	return math.Sqrt(weightH*(hDiff*hDiff) + weightS*(sDiff*sDiff) + weightV*(vDiff*vDiff))
 }
 
-func ColorDifferenceRGB(c1, c2 color.RGBA) float64 {
-	rDiff := float64(c1.R) - float64(c2.R)
-	gDiff := float64(c1.G) - float64(c2.G)
-	bDiff := float64(c1.B) - float64(c2.B)
-	return math.Abs(rDiff + gDiff + bDiff) / 3.0
-}
 
