@@ -27,7 +27,6 @@ func Erode(input string, radius int, multithreaded bool, numberofthreads int) {
 	if multithreaded {
 		var wg sync.WaitGroup
 		rowsPerWorker := (img.Bounds().Max.Y - img.Bounds().Min.Y) / numberofthreads
-		fmt.Println("Rows per worker: ", rowsPerWorker)
 		for w := 0; w < numberofthreads; w++ {
 			wg.Add(1)
 			go func(worker int) {

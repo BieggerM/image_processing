@@ -15,7 +15,7 @@ var (
 )
 
 var bgReduceCmd = &cobra.Command{
-	Use:   "bgsubstract",
+	Use:   "bgsubtract",
 	Short: "Substract background in an image",
 	Run: func(cmd *cobra.Command, args []string) {
 		algorithms.Background_subtract(reference, bgReduceInputFile, threshold, hsv, multitheaded, numberofthreads)
