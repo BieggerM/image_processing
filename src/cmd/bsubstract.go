@@ -5,6 +5,20 @@ import (
 	"github.com/spf13/cobra"
 )
 
+/* 
+bgReduceCmd is a command that substracts the background of an image
+It uses the Background_subtract function from the algorithms package
+
+The command has the following flags:
+	--reference (-r) : Reference image file (required)
+	--input (-i) : Input image file (required)
+	--threshold (-t) : Threshold value for background reduction
+	--hsv (-s) : Use HSV color space for comparison
+	--multithreaded (-m) : Use multithreaded version
+	--numberofthreads (-n) : Number of threads
+*/
+
+
 var (
 	reference         string
 	bgReduceInputFile string

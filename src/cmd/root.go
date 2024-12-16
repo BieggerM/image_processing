@@ -7,6 +7,10 @@ import (
     "github.com/spf13/cobra"
 )
 
+/*
+rootCmd is the main command for the CLI application
+*/
+
 var rootCmd = &cobra.Command{
     Use:   "image_processing",
     Short: "Image processing CLI application",

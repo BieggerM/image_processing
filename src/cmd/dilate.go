@@ -5,6 +5,16 @@ import (
     "github.com/BieggerM/image_processing_golang/algorithms"
 )
 
+/*
+dilateCmd is a command that dilates an image
+It uses the Dilate function from the algorithms package
+
+The command has the following flags:
+    --input (-i) : Input image file (required)
+    --radius (-r) : Pixel Radius (required)
+    --multithreaded (-m) : Use multithreaded version
+    --numberofthreads (-n) : Number of threads
+*/
 var dilateCmd = &cobra.Command{
     Use:   "dilate",
     Short: "Dilate an image",

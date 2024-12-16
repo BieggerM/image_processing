@@ -6,6 +6,17 @@ import (
     "github.com/BieggerM/image_processing_golang/algorithms"
 )
 
+/*
+erodeCmd is a command that erodes an image
+It uses the Erode function from the algorithms package
+
+The command has the following flags:
+    --input (-i) : Input image file (required)
+    --radius (-r) : Pixel Radius (required)
+    --multithreaded (-m) : Use multithreaded version
+    --numberofthreads (-n) : Number of threads
+*/
+
 var erodeCmd = &cobra.Command{
     Use:   "erode",
     Short: "Erode an image",
