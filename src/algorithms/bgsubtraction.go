@@ -101,12 +101,10 @@ It uses the RgbToHsv function from the util package to convert RGB colors to HSV
 It uses the Weighted_hsv_distance function from the util package to calculate the difference between two HSV colors
 */
 func substraction(startY int, endY int, minX int, maxX int, hsv bool, refImg image.Image, inputImg image.Image, threshold float64, outputImg *image.RGBA) {
-	stride := outputImg.Stride
 	var diff float64
 	// iterate over the image
 	for y := startY; y < endY; y++ {
 		for x := minX; x < maxX; x++ {
-			offset := y*stride + x*4
 			if hsv {
 				// convert RGB to HSV
 				h1, s1, v1 := util.RgbToHsv(refImg.At(x, y))
@@ -121,16 +119,10 @@ func substraction(startY int, endY int, minX int, maxX int, hsv bool, refImg ima
 			}
 			if diff < threshold {
 				// set the pixel to black
-				outputImg.Pix[offset+0] = 0
-				outputImg.Pix[offset+1] = 0
-				outputImg.Pix[offset+2] = 0
-				outputImg.Pix[offset+3] = 255
+				outputImg.Set(x, y, color.RGBA{0, 0, 0, 255})
 			} else {
 				// set the pixel to white
-				outputImg.Pix[offset+0] = 255
-				outputImg.Pix[offset+1] = 255
-				outputImg.Pix[offset+2] = 255
-				outputImg.Pix[offset+3] = 255
+				outputImg.Set(x, y, color.RGBA{255, 255, 255, 255})
 			}
 		}
 	}
