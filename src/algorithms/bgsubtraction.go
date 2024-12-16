@@ -43,7 +43,7 @@ func Background_subtract(reference string, input string, threshold float64, hsv 
 	fmt.Printf("[%.7f] 0 (algorithm/bgsubtraction) finish open input image \n", elapsed.Seconds())
 
 	// check if dimensions of the images are the same
-	err = checkCompatibility(refImg, inputImg)
+	err = util.CheckCompatibility(refImg, inputImg)
 	if err != nil {
 		fmt.Println("Error: ", err)
 		return
@@ -128,13 +128,3 @@ func substraction(startY int, endY int, minX int, maxX int, hsv bool, refImg ima
 	}
 }
 
-/*
-checkCompatibility is a function that checks if two images are compatible
-It returns an error if the images are not compatible
-*/
-func checkCompatibility(refImg image.Image, inputImg image.Image) error {
-	if refImg.Bounds().Dx() != inputImg.Bounds().Dx() || refImg.Bounds().Dy() != inputImg.Bounds().Dy() {
-		return fmt.Errorf("images are not compatible")
-	}
-	return nil
-}

@@ -6,6 +6,7 @@ import (
 	"os"
 	"math"
 	"image/color"
+	"fmt"
 )
 
 func LoadImage(filename string) (image.Image, error) {
@@ -32,6 +33,17 @@ func SaveImage(filename string, img image.Image) error {
 	err = jpeg.Encode(file, img, nil)
 	if err != nil {
 		return err
+	}
+	return nil
+}
+
+/*
+checkCompatibility is a function that checks if two images are compatible
+It returns an error if the images are not compatible
+*/
+func CheckCompatibility(refImg image.Image, inputImg image.Image) error {
+	if refImg.Bounds().Dx() != inputImg.Bounds().Dx() || refImg.Bounds().Dy() != inputImg.Bounds().Dy() {
+		return fmt.Errorf("images are not compatible")
 	}
 	return nil
 }

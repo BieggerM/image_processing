@@ -5,41 +5,45 @@ import (
 	"math"
 )
 
-func RgbToHsv(c color.Color) (float64, float64, float64) {
-	r, g, b, _ := c.RGBA()
-	rf := float64(r) / 65535.0
-	gf := float64(g) / 65535.0
-	bf := float64(b) / 65535.0
+/*
+RgbToHsv is a function that converts an RGB color to an HSV color
+It takes a color.Color as input and returns the hue, saturation and value of the color
+*/
+func RgbToHsv(color color.Color) (hue, saturation, value float64) {
+	red, green, blue, _ := color.RGBA()
+	// convert the RGB values to the range [0, 1]
+	redF, greenF, blueF := float64(red)/65535.0, float64(green)/65535.0, float64(blue)/65535.0
 
-	max := math.Max(rf, math.Max(gf, bf))
-	min := math.Min(rf, math.Min(gf, bf))
+	// find the maximum and minimum values of the RGB values
+	max := math.Max(redF, math.Max(greenF, blueF))
+	min := math.Min(redF, math.Min(greenF, blueF))
 	delta := max - min
 
-	var h, s, v float64
-	v = max
+	if max == 0 {
+		return 0, 0, 0 // Black color, hue is undefined
+	}
 
-	if max != 0 {
-		s = delta / max
+	// value is max -> brightness
+	value = max
+
+	saturation = delta / max
+
+	// hue calculation
+	if redF == max {
+		hue = (greenF - blueF) / delta
+	} else if greenF == max {
+		hue = 2 + (blueF-redF)/delta
 	} else {
-		s = 0
-		h = -1
-		return h, s, v
+		hue = 4 + (redF-greenF)/delta
 	}
 
-	if rf == max {
-		h = (gf - bf) / delta
-	} else if gf == max {
-		h = 2 + (bf-rf)/delta
-	} else {
-		h = 4 + (rf-gf)/delta
+	// convert hue to degrees
+	hue *= 60
+	if hue < 0 {
+		hue += 360
 	}
 
-	h *= 60
-	if h < 0 {
-		h += 360
-	}
-
-	return h, s, v
+	return hue, saturation, value
 }
 
 func Weighted_hsv_distance(h1, s1, v1, h2, s2, v2, weightH, weightS, weightV float64) float64 {
@@ -48,5 +52,3 @@ func Weighted_hsv_distance(h1, s1, v1, h2, s2, v2, weightH, weightS, weightV flo
 	vDiff := v1 - v2
 	return math.Sqrt(weightH*(hDiff*hDiff) + weightS*(sDiff*sDiff) + weightV*(vDiff*vDiff))
 }
-
-
