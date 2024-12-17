@@ -4,10 +4,12 @@ import (
 	"fmt"
 	"image"
 	"image/color"
-	"time"
 	"sync"
+	"time"
+
 	"github.com/BieggerM/image_processing_golang/util"
 )
+
 /*
 Background_subtract is a function that subtracts the background of an image
 It uses the substraction function to subtract the background of an image and measure the time it takes to do so
@@ -23,7 +25,7 @@ It times the following operations:
 func Background_subtract(reference string, input string, threshold float64, hsv bool, multithreaded bool, numberofthreads int) {
 	start := time.Now()
 	fmt.Println("-----Reading Reference Image-----")
-	
+
 	// open reference image
 	refImg, err := util.LoadImage(reference)
 	if err != nil {
@@ -32,7 +34,7 @@ func Background_subtract(reference string, input string, threshold float64, hsv 
 	}
 	elapsed := time.Since(start)
 	fmt.Printf("[%.7f] 0 (algorithm/bgsubtraction) finish open reference image \n", elapsed.Seconds())
-	
+
 	// open input image
 	inputImg, err := util.LoadImage(input)
 	if err != nil {
@@ -80,7 +82,7 @@ func Background_subtract(reference string, input string, threshold float64, hsv 
 		// call the substraction function for the whole image
 		substraction(bounds.Min.Y, bounds.Max.Y, bounds.Min.X, bounds.Max.X, hsv, refImg, inputImg, threshold, outputImg)
 	}
-	
+
 	elapsed = time.Since(start)
 	fmt.Printf("[%.7f] 0 (algorithm/bgsubtraction) finish background subtraction \n", elapsed.Seconds())
 
@@ -94,7 +96,7 @@ func Background_subtract(reference string, input string, threshold float64, hsv 
 	fmt.Printf("[%.7f] 0 (algorithm/bgsubtraction) finish save image in %s\n", elapsed.Seconds(), "../out/output.jpg")
 }
 
-/* 
+/*
 substraction is the algorithm that subtracts the background of an image
 It uses the ColorDifferenceRGB function from the util package to calculate the difference between two colors
 It uses the RgbToHsv function from the util package to convert RGB colors to HSV colors
@@ -110,12 +112,12 @@ func substraction(startY int, endY int, minX int, maxX int, hsv bool, refImg ima
 				h1, s1, v1 := util.RgbToHsv(refImg.At(x, y))
 				h2, s2, v2 := util.RgbToHsv(inputImg.At(x, y))
 				// calculate the difference between the two colors
-				diff = util.Weighted_hsv_distance(h1, s1, v1, h2, s2, v2, 1.0, 1.0, 1.0)
+				diff = util.WeightedHSVDifference(h1, s1, v1, h2, s2, v2, 1.0, 1.0, 1.0)
 			} else {
 				r, g, b, _ := refImg.At(x, y).RGBA()
 				r1, g1, b1, _ := inputImg.At(x, y).RGBA()
 				// calculate the difference between the two colors
-				diff = util.ColorDifferenceRGB(color.RGBA{uint8(r >> 8), uint8(g >> 8), uint8(b >> 8), 255}, color.RGBA{uint8(r1 >> 8), uint8(g1 >> 8), uint8(b1 >> 8), 255})
+				diff = util.RGBDifference(uint8(r >> 8), uint8(g >> 8), uint8(b >> 8), uint8(r1 >> 8), uint8(g1 >> 8), uint8(b1 >> 8))
 			}
 			if diff < threshold {
 				// set the pixel to black
@@ -127,4 +129,3 @@ func substraction(startY int, endY int, minX int, maxX int, hsv bool, refImg ima
 		}
 	}
 }
-

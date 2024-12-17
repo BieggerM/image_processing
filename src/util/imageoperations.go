@@ -3,6 +3,8 @@ package util
 import (
 	"image/color"
 	"math"
+	"fmt"
+	"image"
 )
 
 /*
@@ -46,9 +48,28 @@ func RgbToHsv(color color.Color) (hue, saturation, value float64) {
 	return hue, saturation, value
 }
 
-func Weighted_hsv_distance(h1, s1, v1, h2, s2, v2, weightH, weightS, weightV float64) float64 {
+func WeightedHSVDifference(h1, s1, v1, h2, s2, v2, weightH, weightS, weightV float64) float64 {
 	hDiff := h1 - h2
 	sDiff := s1 - s2
 	vDiff := v1 - v2
 	return math.Sqrt(weightH*(hDiff*hDiff) + weightS*(sDiff*sDiff) + weightV*(vDiff*vDiff))
 }
+
+func RGBDifference(r, g, b, r1, g1, b1 uint8) float64 {
+	rDiff := float64(r) - float64(r1)
+	gDiff := float64(g) - float64(g1)
+	bDiff := float64(b) - float64(b1)
+	return math.Abs(rDiff+gDiff+bDiff) / 3.0
+}
+
+/*
+checkCompatibility is a function that checks if two images are compatible
+It returns an error if the images are not compatible
+*/
+func CheckCompatibility(refImg image.Image, inputImg image.Image) error {
+	if refImg.Bounds().Dx() != inputImg.Bounds().Dx() || refImg.Bounds().Dy() != inputImg.Bounds().Dy() {
+		return fmt.Errorf("images are not compatible")
+	}
+	return nil
+}
+
