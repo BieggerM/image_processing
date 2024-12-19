@@ -9,8 +9,7 @@ This is a command-line interface (CLI) application for performing various image 
   - [Background Reduction](#background-reduction)
   - [Dilation](#dilation)
   - [Erosion](#erosion)
-- [Contributing](#contributing)
-- [License](#license)
+  - [Multithreading](#multithreading)
 
 ## Installation
 
