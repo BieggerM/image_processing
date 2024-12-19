@@ -57,3 +57,9 @@ go run [main.go] erode --input <input_image> --radius <pixel_radius>
 ```
 * --input or -i: Path to the input image file (required).
 * --radius or -r: Pixel radius for erosion (default: 2).
+
+### Multithreading
+It is possible to run all operations multithreaded. This divides the image into vertical junks for each specified thread. 
+To run multithreaded, simply add:
+* --multithreaded or -m to run with a default of 4 threads
+* --numberofthreads or -n you can specify a specific amount
